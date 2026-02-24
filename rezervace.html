@@ -1,0 +1,263 @@
+
+<!DOCTYPE html>
+<html lang="cs" data-theme="bw">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rezervace — Prof. Rychlost</title>
+  <meta name="description" content="Rezervace mobilního pneuservisu v Českých Budějovicích. Vyberte termín a pošlete poptávku." />
+  <link rel="icon" href="assets/favicon.ico" />
+  <style>
+:root{--bg:#000;--fg:#fff;--muted:#cfcfcf;--card:#0e0e0e;--acc:#fff;--max:1080px}
+html[data-theme="dark"]{--bg:#0d0d0d;--fg:#f3f3f3;--muted:#bdbdbd;--card:#151515;--acc:#ffd400}
+html[data-theme="light"]{--bg:#f8f8f8;--fg:#111;--muted:#5b5b5b;--card:#ffffff;--acc:#111}
+html[data-theme="blue"]{--bg:#0b0f14;--fg:#f4f7fb;--muted:#a9b3c1;--card:#121821;--acc:#4da3ff}
+html[data-theme="red"]{--bg:#140b0b;--fg:#fff5f5;--muted:#cbaaaa;--card:#1b1111;--acc:#ff6a5e}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.45}
+a{color:var(--acc);text-decoration:none;border-bottom:1px solid #3330} a:hover{border-color:#7776}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+header{position:sticky;top:0;background:color-mix(in oklab, var(--bg) 92%, transparent);border-bottom:1px solid #191919;backdrop-filter:blur(6px);z-index:50}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0}
+.brand{display:flex;align-items:center;gap:12px}
+.brand img{width:40px;height:40px;border-radius:8px;background:#fff}
+.brand h1{font-size:18px;margin:0;letter-spacing:.08em;text-transform:uppercase}
+.header-contact a{display:inline-flex;padding:10px 14px;border:1px solid var(--fg);border-radius:999px;font-weight:700}
+@media (max-width:760px){.nav{flex-direction:column;align-items:flex-start;gap:8px}}
+h2{font-size:clamp(24px,3.6vw,40px);margin:.6em 0}
+section{padding:36px 0}
+.card{background:var(--card);border:1px solid color-mix(in oklab,var(--fg) 10%, var(--bg));border-radius:16px;padding:18px}
+.grid{display:grid;gap:16px}
+@media(min-width:920px){.grid{grid-template-columns:1.1fr .9fr}}
+
+.calendar{display:grid;grid-template-rows:auto 1fr;gap:10px}
+.cal-head{display:flex;justify-content:space-between;align-items:center}
+.cal-head button{border:1px solid #2a2a2a;background:transparent;color:var(--fg);padding:8px 12px;border-radius:10px;cursor:pointer}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.cal-cell{border:1px solid #222;padding:10px;border-radius:10px;text-align:center;cursor:pointer;background:#0c0c0c}
+.cal-cell.muted{opacity:.45;background:#080808}
+.cal-cell.selected{outline:2px solid var(--acc)}
+.slots{display:flex;flex-wrap:wrap;gap:8px}
+.slot{padding:10px 12px;border:1px solid #222;border-radius:999px;cursor:pointer}
+.slot.sel{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.form label{display:block;margin:10px 0 6px;color:var(--muted)}
+.form input,.form select,.form textarea{width:100%;padding:12px;border:1px solid #222;border-radius:10px;background:#0c0c0c;color:var(--fg)}
+.form textarea{min-height:90px}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:14px 18px;border:1px solid var(--fg);border-radius:999px;font-weight:800;color:var(--fg)}
+.btn.fill{background:var(--fg);color:var(--bg)}
+footer{padding:26px 0;color:var(--muted);font-size:14px;border-top:1px solid #191919}
+.foot{display:flex;gap:16px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.theme-switch{display:flex;gap:12px;align-items:center}
+.theme-switch button{border:2px solid #2a2a2a;background:transparent;color:var(--fg);padding:12px 18px;border-radius:999px;cursor:pointer;font-weight:800;font-size:16px;min-width:72px}
+.theme-switch button[aria-pressed=true]{background:var(--fg);color:var(--bg)}
+</style>
+</head>
+<body>
+  <header>
+    <div class="wrap nav">
+      <div class="brand">
+        <img src="assets/logo.png" alt="Logo Prof. Rychlost" width="40" height="40" />
+        <h1>Prof. Rychlost</h1>
+      </div>
+      <div class="header-contact">
+        <a href="index.html#kontakt">Kontakt</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h2>Rezervace termínu</h2>
+    <div class="grid">
+      <section class="card">
+        <div class="calendar">
+          <div class="cal-head">
+            <button id="prevMonth" aria-label="Předchozí měsíc">◀</button>
+            <div id="monthLabel" style="font-weight:800"></div>
+            <button id="nextMonth" aria-label="Další měsíc">▶</button>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+        </div>
+        <div style="margin-top:12px">
+          <strong>Časové sloty:</strong>
+          <div class="slots" id="slots"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <form class="form" id="reqForm">
+          <label>Jméno a příjmení
+            <input required id="name" placeholder="Jan Novák" />
+          </label>
+          <label>Telefon
+            <input required id="phone" placeholder="+420 ..." />
+          </label>
+          <label>Adresa zásahu
+            <input required id="address" placeholder="Ulice a město" />
+          </label>
+          <label>Služba
+            <select id="service">
+              <option>Přezutí</option>
+              <option>Oprava defektu</option>
+              <option>Vyvážení kol</option>
+              <option>Nouzová výměna</option>
+            </select>
+          </label>
+          <label>SPZ / vůz (volitelné)
+            <input id="car" placeholder="Např. 6C9 1633 — Ford Fiesta" />
+          </label>
+          <label>Poznámka
+            <textarea id="note" placeholder="Speciální požadavky…"></textarea>
+          </label>
+          <div class="cta">
+            <a class="btn fill" id="sendMail" href="#">Odeslat e‑mailem</a>
+            <button class="btn" id="dlIcs" type="button">Stáhnout kalendář (.ics)</button>
+          </div>
+          <p style="color:var(--muted);font-size:13px;margin-top:6px">Pozn.: odeslání probíhá přes e‑mailový klient (bez serveru).</p>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap foot">
+      <div>© 2025 Prof. Rychlost • České Budějovice</div>
+      <div class="theme-switch">
+        <button data-theme="bw" aria-pressed="true">B/W</button>
+        <button data-theme="dark" aria-pressed="false">Dark</button>
+        <button data-theme="light" aria-pressed="false">Light</button>
+        <button data-theme="blue" aria-pressed="false">Blue</button>
+        <button data-theme="red" aria-pressed="false">Red</button>
+      </div>
+    </div>
+  </footer>
+
+<script>
+const CONFIG = {{ 
+  email: "prof.rychlost@email.cz",
+  phone: "+420 722 276 416",
+  workDays: [1,2,3,4,5,6],
+  startHour: 8, endHour: 18, slotMinutes: 60,
+  holidays: []
+}};
+
+(function(){  // theme switcher
+  const buttons = document.querySelectorAll('.theme-switch button');
+  const saved = localStorage.getItem('theme');
+  if(saved){{document.documentElement.setAttribute('data-theme', saved);
+    buttons.forEach(b=>b.setAttribute('aria-pressed', (b.dataset.theme===saved)));}}
+  buttons.forEach(b=>b.addEventListener('click', ()=>{{
+    document.documentElement.setAttribute('data-theme', b.dataset.theme);
+    buttons.forEach(x=>x.setAttribute('aria-pressed','false')); b.setAttribute('aria-pressed','true');
+    localStorage.setItem('theme', b.dataset.theme);
+  }}));
+}})();
+
+const calGrid = document.getElementById('calGrid');
+const monthLabel = document.getElementById('monthLabel');
+let viewDate = new Date();
+
+function ymd(d){{return d.toISOString().slice(0,10)}}
+function sameDay(a,b){{return a.getFullYear()==b.getFullYear() && a.getMonth()==b.getMonth() && a.getDate()==b.getDate()}}
+
+let selectedDate = null, selectedSlot = null;
+
+function buildCalendar(){{
+  calGrid.innerHTML='';
+  const y = viewDate.getFullYear(), m = viewDate.getMonth();
+  const first = new Date(y,m,1);
+  const start = new Date(first); start.setDate(1 - ((first.getDay()+6)%7));
+  monthLabel.textContent = first.toLocaleDateString('cs-CZ', {{ month:'long', year:'numeric'}});
+  const today = new Date();
+  for(let i=0;i<42;i++){{  // 6 týdnů
+    const d = new Date(start); d.setDate(start.getDate()+i);
+    const cell = document.createElement('button');
+    cell.className='cal-cell';
+    cell.textContent=d.getDate();
+    if(d.getMonth()!=m) cell.classList.add('muted');
+    const isHoliday = CONFIG.holidays.includes(ymd(d));
+    const wd = ((d.getDay()+6)%7)+1; // Po=1..Ne=7
+    const isWork = CONFIG.workDays.includes(wd);
+    if(!isWork || isHoliday) {{ cell.disabled=true; cell.style.opacity=.35; }}
+    if(sameDay(d,today)) cell.style.borderColor='#444';
+    if(selectedDate && sameDay(d,selectedDate)) cell.classList.add('selected');
+    cell.addEventListener('click',()=>{{selectedDate = d; renderSlots(); buildCalendar();}});
+    calGrid.appendChild(cell);
+  }}
+}}
+document.getElementById('prevMonth').onclick=()=>{{viewDate.setMonth(viewDate.getMonth()-1);buildCalendar()}}
+document.getElementById('nextMonth').onclick=()=>{{viewDate.setMonth(viewDate.getMonth()+1);buildCalendar()}}
+
+function renderSlots(){{
+  selectedSlot=null;
+  const box=document.getElementById('slots'); box.innerHTML='';
+  if(!selectedDate){{box.innerHTML='<span style="color:var(--muted)">Nejprve zvolte datum.</span>';return;}}
+  const start=new Date(selectedDate); start.setHours(CONFIG.startHour,0,0,0);
+  const end=new Date(selectedDate); end.setHours(CONFIG.endHour,0,0,0);
+  for(let t=new Date(start); t<end; t.setMinutes(t.getMinutes()+CONFIG.slotMinutes)){{
+    const b=document.createElement('button'); b.className='slot';
+    const label=t.toLocaleTimeString('cs-CZ',{{hour:'2-digit',minute:'2-digit'}});
+    b.textContent=label;
+    b.onclick=()=>{{document.querySelectorAll('.slot').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); selectedSlot=new Date(t)}};
+    box.appendChild(b);
+  }}
+}}
+buildCalendar(); renderSlots();
+
+function buildSummary(){{
+  const name=document.getElementById('name').value.trim();
+  const phone=document.getElementById('phone').value.trim();
+  const address=document.getElementById('address').value.trim();
+  const service=document.getElementById('service').value;
+  const car=document.getElementById('car').value.trim();
+  const note=document.getElementById('note').value.trim();
+  const d=selectedDate?selectedDate.toLocaleDateString('cs-CZ'):'';
+  const t=selectedSlot?selectedSlot.toLocaleTimeString('cs-CZ',{{hour:'2-digit',minute:'2-digit'}}):'';
+  return {{name,phone,address,service,car,note,date:d,time:t}};
+}}
+
+document.getElementById('sendMail').addEventListener('click', (e)=>{{
+  e.preventDefault();
+  const s=buildSummary();
+  if(!s.name||!s.phone||!s.address||!selectedDate||!selectedSlot){{
+    alert('Vyplňte prosím jméno, telefon, adresu a zvolte datum + čas.');
+    return;
+  }}
+  const subject=encodeURIComponent('Rezervace — '+s.date+' '+s.time+' — '+s.name);
+  const body=encodeURIComponent(
+`Služba: ${'{'}s.service{'}'}
+Datum a čas: ${'{'}s.date{'}'} ${'{'}s.time{'}'}
+Jméno: ${'{'}s.name{'}'}
+Telefon: ${'{'}s.phone{'}'}
+Adresa: ${'{'}s.address{'}'}
+Vůz: ${'{'}s.car{'}'}
+Poznámka: ${'{'}s.note{'}'}`);
+  window.location.href=`mailto:${'{'}CONFIG.email{'}'}?subject=${'{'}subject{'}'}&body=${'{'}body{'}'}`;
+}});
+
+function pad(n){{return (n<10?'0':'')+n}}
+function toICSDate(dt){{return dt.getFullYear()+pad(dt.getMonth()+1)+pad(dt.getDate())+'T'+pad(dt.getHours())+pad(dt.getMinutes())+'00'}}
+
+document.getElementById('dlIcs').addEventListener('click', ()=>{{
+  if(!selectedDate||!selectedSlot){{alert('Zvolte prosím datum a čas.');return;}}
+  const s=buildSummary();
+  const start=new Date(selectedSlot);
+  const end=new Date(start.getTime()+CONFIG.slotMinutes*60000);
+  const ics=`BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Prof Rychlost//CZ
+BEGIN:VEVENT
+DTSTART:${'{'}toICSDate(start){'}'}
+DTEND:${'{'}toICSDate(end){'}'}
+SUMMARY:Mobilní pneuservis — ${'{'}s.service{'}'}
+DESCRIPTION:${'{'}s.name{'}'}, ${'{'}s.phone{'}'}. ${'{'}s.address{'}'}. ${'{'}s.car{'}'}. ${'{'}s.note{'}'}
+LOCATION:${'{'}s.address{'}'}
+END:VEVENT
+END:VCALENDAR`;
+  const blob=new Blob([ics],{{type:'text/calendar;charset=utf-8'}});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='rezervace.ics'; a.click();
+  URL.revokeObjectURL(url);
+}});
+</script>
+</body>
+</html>
